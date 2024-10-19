@@ -99,7 +99,7 @@ function iosOrAndrooid(aX, aY, aZ) {
 // texture内に保存されているjpgのパス
 const textureUrls = [
     'textures/ground.jpg', // 道
-    '', // ゴールテープ
+    'textures/goal.jpg', // ゴールテープ
 ];
 
 // 読み込むGLBモデルのパス
@@ -156,7 +156,17 @@ textureloader.load(textureUrls[0], function (texture) {
 } );
 
 // ゴールテープの描写
-// ここに記述
+textureloader.load(textureUrls[1], function (texture) {
+    const goalGeometry = new THREE.BoxGeometry(24, 10, 0.5); // 地面のジオメトリを作成 (BoxGeometry)
+    var sphereMaterial = new THREE.MeshPhongMaterial();
+    sphereMaterial.map = texture;
+    const goal = new THREE.Mesh(goalGeometry, sphereMaterial); // メッシュを作成 (ジオメトリ + マテリアル)
+    goal.position.set( 0 , 5, -200)
+    scene.add(goal);
+},undefined, function ( error ) {
+    console.error(error);
+} );
+
 
 // センサーの値の読み取り
 document.addEventListener("DOMContentLoaded", function () {
@@ -186,16 +196,16 @@ document.addEventListener("DOMContentLoaded", function () {
         displayData();
     }, 33); // 33msごとに
 
-    function displayData() {
-        var result = document.getElementById("result");
-        result.innerHTML =
-            "alpha: " + alpha.toFixed(2) + "<br>" +
-            "beta: " + beta.toFixed(2) + "<br>" +
-            "gamma: " + gamma.toFixed(2) + "<br>" +
-            "aX" + aX + "<br>" +
-            "aY" + aY + "<br>" +
-            "aZ" + aZ + "<br>"
-    }
+    // function displayData() {
+    //     var result = document.getElementById("result");
+    //     result.innerHTML =
+    //         "alpha: " + alpha.toFixed(2) + "<br>" +
+    //         "beta: " + beta.toFixed(2) + "<br>" +
+    //         "gamma: " + gamma.toFixed(2) + "<br>" +
+    //         "aX" + aX + "<br>" +
+    //         "aY" + aY + "<br>" +
+    //         "aZ" + aZ + "<br>"
+    // }
 })
 
 // プレイヤーの左右移動
