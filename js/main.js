@@ -204,10 +204,18 @@ document.addEventListener("DOMContentLoaded", function () {
     // 加速度センサの値の取得
     if (ios){
         // iosの時
-        // ここに追加
+        window.addEventListener("devicemotion", (dat) => {
+            aX = dat.accelerationIncludingGravity.x || 0;
+            aY = dat.accelerationIncludingGravity.y || 0;
+            aZ = dat.accelerationIncludingGravity.z || 0;
+        });
     }else{
         // androidの時
-        // ここに追加
+        window.addEventListener("devicemotion", (dat) => {
+            aX = -dat.accelerationIncludingGravity.x || 0;
+            aY = -dat.accelerationIncludingGravity.y || 0;
+            aZ = -dat.accelerationIncludingGravity.z || 0;
+        });
     }
     
     // 一度だけ実行
@@ -217,11 +225,20 @@ document.addEventListener("DOMContentLoaded", function () {
       }
 
     // ジャイロセンサーの値の取得
-    // ここに追加
+    window.addEventListener(
+        "deviceorientation",
+        (event) => {
+          alpha = event.alpha || 0;
+          beta = event.beta || 0;
+          gamma = event.gamma || 0;
+          console.log("Gyro:", alpha, beta, gamma);
+        },
+        false
+    );
 
     // 指定時間ごとに繰り返し実行される setInterval(実行する内容, 間隔[ms]) タイマーを設定
     var graphtimer = window.setInterval(() => {
-        // displayData();
+        displayData();
     }, 33); // 33msごとに
 
     function displayData() {
