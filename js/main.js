@@ -104,15 +104,30 @@ const textureUrls = [
 
 // 読み込むGLBモデルのパス
 const glbUrls = [
-    'models/player',// プレイヤー // ここに追加
+    'models/player.glb',// プレイヤー 
     'models/houses.glb',// 周り
     'models/phone.glb', // スマホ
-    '', // 障害物１ // ここに追加
-    '', // 障害物2
 ];
 
 // プレイヤーの描写
-// ここに記述
+glbloader.load(glbUrls[0], function (gltf) {
+    player = gltf.scene
+    player.scale.set(3,2,3)
+    player.rotation.set(0,Math.PI,0)
+    player.position.set(0,0,0)
+    // 追加
+    mixer = new AnimationMixer(player); // 解説 1
+    const runningAction = gltf.animations.find(animation => animation.name === 'running'); // 解説 2
+    if (runningAction) {
+        mixer.clipAction(runningAction).play(); // 解説 3
+    } else {
+        console.warn('Running animation not found in the model.');
+    }
+    // ここまで追加
+    scene.add(player)
+},undefined, function ( error ) {
+    console.error( error );
+} );
 
 // 建物の描写
 glbloader.load(glbUrls[1], function (gltf) {
@@ -129,7 +144,20 @@ glbloader.load(glbUrls[1], function (gltf) {
 } );
 
 // スマホの描写
-// ここに記述
+glbloader.load(glbUrls[2], function (gltf) {
+    var model;
+    for ( var g = 1; g < 10 ;g++){
+        model = gltf.scene.clone()
+        model.scale.set(15,15,15)
+        model.rotation.set(0,( Math.PI / 4 ),( Math.PI / 4 ))
+        const randomIndex = Math.floor(Math.random() * 3) // 0,1,2のランダム
+        model.position.set(course[randomIndex],2,-10*g)
+        phone_list.push(model)// オブジェクトのバウンディングボックスを計算
+        scene.add(model)
+    }
+},undefined, function ( error ) {
+    console.error( error );
+} );
 
 // 障害物の描写
 for (var g=1 ; g<12 ; g++ ){
@@ -157,10 +185,10 @@ textureloader.load(textureUrls[0], function (texture) {
 
 // ゴールテープの描写
 textureloader.load(textureUrls[1], function (texture) {
-    const goalGeometry = new THREE.BoxGeometry(24, 10, 0.5); // 地面のジオメトリを作成 (BoxGeometry)
-    var sphereMaterial = new THREE.MeshPhongMaterial();
+    const goalGeometry = new BoxGeometry(24, 10, 0.5); // 地面のジオメトリを作成 (BoxGeometry)
+    var sphereMaterial = new MeshPhongMaterial();
     sphereMaterial.map = texture;
-    const goal = new THREE.Mesh(goalGeometry, sphereMaterial); // メッシュを作成 (ジオメトリ + マテリアル)
+    const goal = new Mesh(goalGeometry, sphereMaterial); // メッシュを作成 (ジオメトリ + マテリアル)
     goal.position.set( 0 , 5, -200)
     scene.add(goal);
 },undefined, function ( error ) {
@@ -193,24 +221,39 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // 指定時間ごとに繰り返し実行される setInterval(実行する内容, 間隔[ms]) タイマーを設定
     var graphtimer = window.setInterval(() => {
-        displayData();
+        // displayData();
     }, 33); // 33msごとに
 
-    // function displayData() {
-    //     var result = document.getElementById("result");
-    //     result.innerHTML =
-    //         "alpha: " + alpha.toFixed(2) + "<br>" +
-    //         "beta: " + beta.toFixed(2) + "<br>" +
-    //         "gamma: " + gamma.toFixed(2) + "<br>" +
-    //         "aX" + aX + "<br>" +
-    //         "aY" + aY + "<br>" +
-    //         "aZ" + aZ + "<br>"
-    // }
+    function displayData() {
+        var result = document.getElementById("result");
+        result.innerHTML =
+            "alpha: " + alpha.toFixed(2) + "<br>" +
+            "beta: " + beta.toFixed(2) + "<br>" +
+            "gamma: " + gamma.toFixed(2) + "<br>" +
+            "aX" + aX + "<br>" +
+            "aY" + aY + "<br>" +
+            "aZ" + aZ + "<br>"
+    }
 })
 
 // プレイヤーの左右移動
 function move(){
-    // ここに追加
+    player.position.z -= 0.2
+    if ( gamma > 20 && !isMoving){
+        if ( index == 0 || index == 1){
+            isMoving = true
+            index += 1
+            player.position.x = course[index]
+        }
+    }else if ( gamma < -20 && !isMoving){
+        if ( index == 1 || index == 2){
+            isMoving = true
+            index -= 1
+            player.position.x = course[index]
+        }
+    }else if (gamma < 1.5 && gamma > -1.5){
+        isMoving = false
+    }
 }
 
 // プレイヤーのジャンプ
@@ -254,16 +297,24 @@ function animate(){
     const animationId = requestAnimationFrame(animate)
 
     // Mixer
-    // ここに追加
+    if (mixer) {
+        mixer.update(0.01); // delta time（時間の経過量）
+    }
 
     // 移動関数の実行
-    // ここに追加
+    move()
 
     // ジャンプ関数の実行
     // ここに追加
 
     // 衝突判定関数の実行
     // ここに追加
+
+    // カメラの移動
+    if (player) {
+        camera.position.set(0, 8, player.position.z + 10);
+        camera.lookAt(new Vector3(0,5,player.position.z))
+    }
 
     renderer.render(scene, camera);
 }
