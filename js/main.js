@@ -238,7 +238,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // 指定時間ごとに繰り返し実行される setInterval(実行する内容, 間隔[ms]) タイマーを設定
     var graphtimer = window.setInterval(() => {
-        displayData();
+        // displayData();
     }, 33); // 33msごとに
 
     function displayData() {
@@ -296,32 +296,41 @@ function collision(){
     var geometry = new BoxGeometry(box_X,box_Y,box_Z)
     const material = new MeshPhongMaterial({color: 0xFF0000});
     playerBox = new Mesh(geometry, material);
-    playerBox.position.set(player.position.x,player.position.y + box_Y,player.position.z)
+    playerBox.position.set(player.position.x,player.position.y + box_Y/2,player.position.z)
     playerBox.updateWorldMatrix(true, true);
     const playerBoundingBox = new Box3().setFromObject(playerBox);
     const playerHelper = new Box3Helper(playerBoundingBox, 0xff0000);
-    scene.add(playerHelper)
+    // scene.add(playerHelper)
     // 障害物との衝突
     enemy_list = enemy_list.filter((enemy) => {
-        const enemyBoundingBox = new THREE.Box3().setFromObject(enemy);
-        var enemyHelper = new THREE.Box3Helper(enemyBoundingBox, 0xff0000);
-        scene.add(enemyHelper);
+        const enemyBoundingBox = new Box3().setFromObject(enemy);
+        var enemyHelper = new Box3Helper(enemyBoundingBox, 0xff0000);
+        // scene.add(enemyHelper);
+        
+        if (playerBoundingBox.intersectsBox(enemyBoundingBox)) {
+            return false; // この敵を削除
+        }
+        return true; // この敵を保持
     });
-
-
     // スマホとの衝突 
     phone_list = phone_list.filter((phone) => {
-        const phoneBoundingBox = new THREE.Box3().setFromObject(phone);
-        var phoneHelper = new THREE.Box3Helper(phoneBoundingBox, 0xff0000);
-        scene.add(phoneHelper);
+        const phoneBoundingBox = new Box3().setFromObject(phone);
+        var phoneHelper = new Box3Helper(phoneBoundingBox, 0xff0000);
+        // scene.add(phoneHelper);
+
+        if (playerBoundingBox.intersectsBox(phoneBoundingBox)) {
+            scene.remove(phone)
+            return false; // このスマホを削除
+        }
+        return true; // このスマホを保持
     });
 
     // ゴールテープとの衝突
     if (goal){
         goalBoundingBox = new Box3().setFromObject(goal);
         if (playerBoundingBox.intersectsBox(goalBoundingBox)) { 
-            isGoal = true     
-            console.log('ゴール')     
+            isGoal = true;
+            console.log('ゴール');     
             localStorage.setItem('getPhone', getPhone);
             localStorage.setItem('isGoal', isGoal);
             window.location.href = "./index.html";
