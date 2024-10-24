@@ -310,8 +310,6 @@ function collision(){
         
         if (playerBoundingBox.intersectsBox(enemyBoundingBox)) {
             // 追加
-            localStorage.setItem("getPhone", getPhone);
-            localStorage.setItem("isGoal", isGoal);
             window.location.href = "./index.html";
             return false;
         }
@@ -325,7 +323,6 @@ function collision(){
 
         if (playerBoundingBox.intersectsBox(phoneBoundingBox)) {
             // 追加
-            getPhone += 1;
             scene.remove(phone);
             return false;
         }
@@ -337,9 +334,6 @@ function collision(){
         goalBoundingBox = new Box3().setFromObject(goal);
         if (playerBoundingBox.intersectsBox(goalBoundingBox)) {
             isGoal = true;
-            // 追加
-            localStorage.setItem("getPhone", getPhone);
-            localStorage.setItem("isGoal", isGoal);
             window.location.href = "./index.html";
         }
     }

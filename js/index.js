@@ -1,22 +1,4 @@
-let lastGame;
-let getPhone;
-let isGoal;
-
 document.addEventListener("DOMContentLoaded", () => {
-    let text;
-    if (localStorage.length > 0) {
-        lastGame = document.getElementById("score");
-        getPhone = localStorage.getItem('getPhone');
-        isGoal = localStorage.getItem('isGoal') // 文字列
-        if (isGoal === true){
-            text = "おめでとう"
-        }else{
-            text = "残念"
-        }
-        lastGame.innerHTML = 
-            text + "<br>"+ 
-            "獲得したスマホの数は" + getPhone + "です。"
-    }
     var sensorBtn = document.getElementById("sensor_permission");
     sensorBtn.addEventListener("click", () => {
         if (window.DeviceOrientationEvent && window.DeviceOrientationEvent.requestPermission) {
