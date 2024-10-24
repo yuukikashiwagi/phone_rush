@@ -290,9 +290,9 @@ function jump(){
 
 // 衝突判定
 function collision(){
-    box_X = 0;
-    box_Y = 0;
-    box_Z = 0; // サイズが合うように変えてみましょう。
+    box_X = 3;
+    box_Y = 4;
+    box_Z = 2; // サイズが合うように変えてみましょう。
     var geometry = new BoxGeometry(box_X,box_Y,box_Z)
     const material = new MeshPhongMaterial({color: 0xFF0000});
     playerBox = new Mesh(geometry, material);
@@ -302,10 +302,19 @@ function collision(){
     const playerHelper = new Box3Helper(playerBoundingBox, 0xff0000);
     scene.add(playerHelper)
     // 障害物との衝突
-    // ここに追加
+    enemy_list = enemy_list.filter((enemy) => {
+        const enemyBoundingBox = new THREE.Box3().setFromObject(enemy);
+        var enemyHelper = new THREE.Box3Helper(enemyBoundingBox, 0xff0000);
+        scene.add(enemyHelper);
+    });
+
 
     // スマホとの衝突 
-    // ここに追加
+    phone_list = phone_list.filter((phone) => {
+        const phoneBoundingBox = new THREE.Box3().setFromObject(phone);
+        var phoneHelper = new THREE.Box3Helper(phoneBoundingBox, 0xff0000);
+        scene.add(phoneHelper);
+    });
 
     // ゴールテープとの衝突
     if (goal){
@@ -329,18 +338,18 @@ function animate(){
     }
 
     // 移動関数の実行
-    move()
+    move();
 
     // ジャンプ関数の実行
-    jump()
+    jump();
 
     // 衝突判定関数の実行
-    // ここに追加
+    collision();
 
     // カメラの移動
     if (player) {
         camera.position.set(0, 8, player.position.z + 10);
-        camera.lookAt(new Vector3(0,5,player.position.z))
+        camera.lookAt(new Vector3(0,5,player.position.z));
     }
 
     renderer.render(scene, camera);
