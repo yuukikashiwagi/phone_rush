@@ -47,6 +47,7 @@ let isGoal = false;
 let box_X;
 let box_Y;
 let box_Z;
+let getPhone = 0;
 
 // センサー
 let alpha;
@@ -188,7 +189,7 @@ textureloader.load(textureUrls[1], function (texture) {
     const goalGeometry = new BoxGeometry(24, 10, 0.5); // 地面のジオメトリを作成 (BoxGeometry)
     var sphereMaterial = new MeshPhongMaterial();
     sphereMaterial.map = texture;
-    const goal = new Mesh(goalGeometry, sphereMaterial); // メッシュを作成 (ジオメトリ + マテリアル)
+    goal = new Mesh(goalGeometry, sphereMaterial); // メッシュを作成 (ジオメトリ + マテリアル)
     goal.position.set( 0 , 5, -200)
     scene.add(goal);
 },undefined, function ( error ) {
@@ -308,7 +309,11 @@ function collision(){
         // scene.add(enemyHelper);
         
         if (playerBoundingBox.intersectsBox(enemyBoundingBox)) {
-            return false; // この敵を削除
+            // 追加
+            localStorage.setItem("getPhone", getPhone);
+            localStorage.setItem("isGoal", isGoal);
+            window.location.href = "./index.html";
+            return false;
         }
         return true; // この敵を保持
     });
@@ -319,8 +324,10 @@ function collision(){
         // scene.add(phoneHelper);
 
         if (playerBoundingBox.intersectsBox(phoneBoundingBox)) {
-            scene.remove(phone)
-            return false; // このスマホを削除
+            // 追加
+            getPhone += 1;
+            scene.remove(phone);
+            return false;
         }
         return true; // このスマホを保持
     });
@@ -328,11 +335,11 @@ function collision(){
     // ゴールテープとの衝突
     if (goal){
         goalBoundingBox = new Box3().setFromObject(goal);
-        if (playerBoundingBox.intersectsBox(goalBoundingBox)) { 
+        if (playerBoundingBox.intersectsBox(goalBoundingBox)) {
             isGoal = true;
-            console.log('ゴール');     
-            localStorage.setItem('getPhone', getPhone);
-            localStorage.setItem('isGoal', isGoal);
+            // 追加
+            localStorage.setItem("getPhone", getPhone);
+            localStorage.setItem("isGoal", isGoal);
             window.location.href = "./index.html";
         }
     }
