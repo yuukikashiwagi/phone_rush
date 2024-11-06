@@ -47,6 +47,7 @@ let isGoal = false;
 let box_X;
 let box_Y;
 let box_Z;
+let getPhone = 0;
 
 // センサー
 let alpha;
@@ -188,7 +189,7 @@ textureloader.load(textureUrls[1], function (texture) {
     const goalGeometry = new BoxGeometry(24, 10, 0.5); // 地面のジオメトリを作成 (BoxGeometry)
     var sphereMaterial = new MeshPhongMaterial();
     sphereMaterial.map = texture;
-    const goal = new Mesh(goalGeometry, sphereMaterial); // メッシュを作成 (ジオメトリ + マテリアル)
+    goal = new Mesh(goalGeometry, sphereMaterial); // メッシュを作成 (ジオメトリ + マテリアル)
     goal.position.set( 0 , 5, -200)
     scene.add(goal);
 },undefined, function ( error ) {
@@ -204,10 +205,18 @@ document.addEventListener("DOMContentLoaded", function () {
     // 加速度センサの値の取得
     if (ios){
         // iosの時
-        // ここに追加
+        window.addEventListener("devicemotion", (dat) => {
+            aX = dat.accelerationIncludingGravity.x || 0;
+            aY = dat.accelerationIncludingGravity.y || 0;
+            aZ = dat.accelerationIncludingGravity.z || 0;
+        });
     }else{
         // androidの時
-        // ここに追加
+        window.addEventListener("devicemotion", (dat) => {
+            aX = -dat.accelerationIncludingGravity.x || 0;
+            aY = -dat.accelerationIncludingGravity.y || 0;
+            aZ = -dat.accelerationIncludingGravity.z || 0;
+        });
     }
     
     // 一度だけ実行
@@ -217,7 +226,16 @@ document.addEventListener("DOMContentLoaded", function () {
       }
 
     // ジャイロセンサーの値の取得
-    // ここに追加
+    window.addEventListener(
+        "deviceorientation",
+        (event) => {
+          alpha = event.alpha || 0;
+          beta = event.beta || 0;
+          gamma = event.gamma || 0;
+          console.log("Gyro:", alpha, beta, gamma);
+        },
+        false
+    );
 
     // 指定時間ごとに繰り返し実行される setInterval(実行する内容, 間隔[ms]) タイマーを設定
     var graphtimer = window.setInterval(() => {
@@ -258,36 +276,64 @@ function move(){
 
 // プレイヤーのジャンプ
 function jump(){
-    // ここに追加
+    if ( !isJumping && aZ > 0){
+        player_v_y = initial_velocity
+        isJumping = true
+    }else if (isJumping){
+        player_v_y -= gravity
+        player.position.y += player_v_y
+        if (player.position.y <= 0){
+            isJumping = false
+            player.position.y = 0
+        }
+    }
 }
 
 // 衝突判定
 function collision(){
-    box_X = 0;
-    box_Y = 0;
-    box_Z = 0; // サイズが合うように変えてみましょう。
+    box_X = 3;
+    box_Y = 4;
+    box_Z = 2; // サイズが合うように変えてみましょう。
     var geometry = new BoxGeometry(box_X,box_Y,box_Z)
     const material = new MeshPhongMaterial({color: 0xFF0000});
     playerBox = new Mesh(geometry, material);
-    playerBox.position.set(player.position.x,player.position.y + box_Y,player.position.z)
+    playerBox.position.set(player.position.x,player.position.y + box_Y/2,player.position.z)
     playerBox.updateWorldMatrix(true, true);
     const playerBoundingBox = new Box3().setFromObject(playerBox);
     const playerHelper = new Box3Helper(playerBoundingBox, 0xff0000);
-    scene.add(playerHelper)
+    // scene.add(playerHelper)
     // 障害物との衝突
-    // ここに追加
-
+    enemy_list = enemy_list.filter((enemy) => {
+        const enemyBoundingBox = new Box3().setFromObject(enemy);
+        var enemyHelper = new Box3Helper(enemyBoundingBox, 0xff0000);
+        // scene.add(enemyHelper);
+        
+        if (playerBoundingBox.intersectsBox(enemyBoundingBox)) {
+            // 追加
+            window.location.href = "./index.html";
+            return false;
+        }
+        return true; // この敵を保持
+    });
     // スマホとの衝突 
-    // ここに追加
+    phone_list = phone_list.filter((phone) => {
+        const phoneBoundingBox = new Box3().setFromObject(phone);
+        var phoneHelper = new Box3Helper(phoneBoundingBox, 0xff0000);
+        // scene.add(phoneHelper);
+
+        if (playerBoundingBox.intersectsBox(phoneBoundingBox)) {
+            // 追加
+            scene.remove(phone);
+            return false;
+        }
+        return true; // このスマホを保持
+    });
 
     // ゴールテープとの衝突
     if (goal){
         goalBoundingBox = new Box3().setFromObject(goal);
-        if (playerBoundingBox.intersectsBox(goalBoundingBox)) { 
-            isGoal = true     
-            console.log('ゴール')     
-            localStorage.setItem('getPhone', getPhone);
-            localStorage.setItem('isGoal', isGoal);
+        if (playerBoundingBox.intersectsBox(goalBoundingBox)) {
+            isGoal = true;
             window.location.href = "./index.html";
         }
     }
@@ -302,18 +348,18 @@ function animate(){
     }
 
     // 移動関数の実行
-    move()
+    move();
 
     // ジャンプ関数の実行
-    // ここに追加
+    jump();
 
     // 衝突判定関数の実行
-    // ここに追加
+    collision();
 
     // カメラの移動
     if (player) {
         camera.position.set(0, 8, player.position.z + 10);
-        camera.lookAt(new Vector3(0,5,player.position.z))
+        camera.lookAt(new Vector3(0,5,player.position.z));
     }
 
     renderer.render(scene, camera);
